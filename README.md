@@ -43,7 +43,7 @@ health_checker = MQTTHealthChecker(
 
 Run the application:
 ```bash
-python mqtt_healthcheck.py
+python mqtt_healthcheck.py --host <IP> --port <1883> --user <mqtt-user> --password <password> --topics-file <topics.json>
 ```
 
 Open your web browser and navigate to: http://localhost:5000
