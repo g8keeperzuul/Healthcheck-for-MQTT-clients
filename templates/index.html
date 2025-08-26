@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Health Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .refresh-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr.healthy {
+            background-color: #f8f8f8;
+        }
+        
+        tr.unhealthy {
+            background-color: #ffcccb;
+            color: #d32f2f;
+        }
+        
+        tr.never_seen {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-healthy {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .status-unhealthy {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .status-never {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #d32f2f;
+            background-color: #ffcccb;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .last-updated {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .type-icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .icon-eth {
+            background-image: url('/static/icons/eth.svg');
+        }
+        
+        .icon-wifi {
+            background-image: url('/static/icons/wifi.svg');
+        }
+        
+        .icon-bt {
+            background-image: url('/static/icons/bt.svg');
+        }
+        
+        .icon-zig {
+            background-image: url('/static/icons/zig.svg');
+        }
+        
+        .icon-433 {
+            background-image: url('/static/icons/433.svg');
+        }
+        
+        .icon-zwa {
+            background-image: url('/static/icons/zwa.svg');
+        }
+        
+        .icon-unknown {
+            background-image: url('/static/icons/unknown.svg');
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MQTT IoT Health Checker</h1>
+        <div class="refresh-info">
+            Page automatically refreshes every 10 seconds
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading topic status...
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            Error loading data. Please check if the service is running.
+        </div>
+        
+        <table id="statusTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Device/Sensor</th>
+                    <th>Last Message</th>
+                    <th>Time Since</th>
+                    <th>Message Count</th>
+                    <th>Avg Interval</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="statusTableBody">
+            </tbody>
+        </table>
+        
+        <div class="last-updated" id="lastUpdated"></div>
+    </div>
+
+    <script>
+        function formatStatus(status) {
+            const statusMap = {
+                'healthy': { text: 'Healthy', class: 'status-healthy' },
+                'unhealthy': { text: 'Unhealthy', class: 'status-unhealthy' },
+                'never_seen': { text: 'Never Seen', class: 'status-never' }
+            };
+            
+            const statusInfo = statusMap[status] || { text: 'Unknown', class: 'status-never' };
+            return `<span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>`;
+        }
+        
+        function getTypeIcon(type) {
+            const typeMap = {
+                'eth': 'icon-eth',
+                'wifi': 'icon-wifi',
+                'bt': 'icon-bt',
+                'zig': 'icon-zig',
+                '433': 'icon-433',
+                'zwa': 'icon-zwa',
+                'unknown': 'icon-unknown'
+            };
+            
+            const iconClass = typeMap[type] || 'icon-unknown';
+            return `<span class="type-icon ${iconClass}" title="${type.toUpperCase()} Connection"></span>`;
+        }
+        
+        function updateTable(data) {
+            const tbody = document.getElementById('statusTableBody');
+            const table = document.getElementById('statusTable');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            if (!data || data.length === 0) {
+                loading.style.display = 'block';
+                table.style.display = 'none';
+                error.style.display = 'none';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = item.status;
+                
+                row.innerHTML = `
+                    <td title="${item.topic}">${getTypeIcon(item.type)}${item.display_name}</td>
+                    <td>${item.last_seen}</td>
+                    <td>${item.time_since}</td>
+                    <td>${item.message_count}</td>
+                    <td>${item.avg_interval}</td>
+                    <td>${formatStatus(item.status)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            loading.style.display = 'none';
+            table.style.display = 'table';
+            error.style.display = 'none';
+            
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date().toLocaleString()}`;
+        }
+        
+        function fetchData() {
+            fetch('/api/status')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateTable(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('statusTable').style.display = 'none';
+                });
+        }
+        
+        // Initial load
+        fetchData();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(fetchData, 10000);
+    </script>
+</body>
+</html>

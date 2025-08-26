@@ -1,0 +1,89 @@
+{
+  "topics": [
+    {
+      "topic": "homeassistant/sensor/aranet4-12ED5/state",
+      "description": "Aranet4 CO2 Sensor (12ED5)",
+      "type": "bt"
+    },
+    {
+      "topic": "homeassistant/sensor/Acurite-Tower-2782/state",
+      "description": "Outdoor Acurite Temp/Humidity Sensor",
+      "type": "433"
+    },
+    {
+      "topic": "homeassistant/sensor/featherm0/state",
+      "description": "AirMonitor",
+      "type": "wifi"
+    },
+    {
+      "topic": "homeassistant/sensor/esp8266thing/state",
+      "description": "RadiationWatcher",
+      "type": "wifi"
+    },
+    {
+      "topic": "homeassistant/text/featheresp32s2/display/state",
+      "description": "Chime",
+      "type": "wifi"
+    },
+    {
+      "topic": "homeassistant/sensor/Oregon-THGR810-225/state",
+      "description": "Oregon Temp/Humidity Sensor #1",
+      "type": "433"
+    },
+    {
+      "topic": "homeassistant/sensor/Oregon-THGR810-24/state",
+      "description": "Oregon Temp/Humidity Sensor #2",
+      "type": "433"
+    },
+    {
+      "topic": "homeassistant/sensor/Oregon-THGR810-32/state",
+      "description": "Oregon Temp/Humidity Sensor #3",
+      "type": "433"
+    },
+    {
+      "topic": "zigbee2mqtt/dremel_plug",
+      "description": "Dremel Smart Plug",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/laser_printer_plug",
+      "description": "Laser Printer Smart Plug",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/exhaust_fan_plug",
+      "description": "Exhaust Fan Smart Plug",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/master_temp",
+      "description": "Master Bedroom Temperature Sensor",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/garage_door_1",
+      "description": "Garage Door Sensor",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/0x00158d008b7f6ee5",
+      "description": "Back Door Sensor (unused)",
+      "type": "zig"
+    },    
+    {
+      "topic": "zigbee2mqtt/front_door",
+      "description": "Front Door Sensor",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/main_bathroom_window",
+      "description": "Main Bathroom Window Sensor",
+      "type": "zig"
+    },
+    {
+      "topic": "zigbee2mqtt/thermostat",
+      "description": "Thermostat",
+      "type": "zig"
+    }
+  ]
+}
