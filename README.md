@@ -13,6 +13,8 @@ A Python application that monitors MQTT topics and displays their health status 
 - Auto-refreshes every 10 seconds
 - REST API endpoint for status data
 
+![Screenshot](./healthchecker-web-screenshot.png)
+
 ## Installation
 
 1. Install dependencies:
