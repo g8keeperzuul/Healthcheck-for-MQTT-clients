@@ -24,20 +24,28 @@ pip install -r requirements.txt
 ```json
 {
   "topics": [
-    "sensors/temperature/living_room",
-    "sensors/humidity/bedroom",
-    "devices/thermostat/status"
+    {
+      "topic": "homeassistant/sensor/Acurite-Tower-2782/state",
+      "description": "Outdoor Acurite Temp/Humidity Sensor",
+      "type": "433"
+    },
+    {
+      "topic": "homeassistant/sensor/featherm0/state",
+      "description": "AirMonitor",
+      "type": "wifi"
+    },
   ]
 }
+
+where "type": 
+  "wifi" - IoT device that uses 802.11 wireless networking
+  "zig" - IoT device that connects via Zigbee
+  "433" - IoT device that uses 433MHz (ISM) radio
+  "zwa" - IoT device that uses Z-Wave
+  "bt" - IoT device that connects via Bluetooth
+
 ```
 
-3. Update MQTT broker settings in `mqtt_healthcheck.py` if needed:
-```python
-health_checker = MQTTHealthChecker(
-    broker_host="localhost",  # Change to your MQTT broker IP
-    broker_port=1883          # Change to your MQTT broker port
-)
-```
 
 ## Usage
 
@@ -61,4 +69,3 @@ Edit `topics.json` to add or remove MQTT topics to monitor. The application will
 
 - Python 3.6+
 - MQTT broker (e.g., Mosquitto)
-- Network access to MQTT broker
