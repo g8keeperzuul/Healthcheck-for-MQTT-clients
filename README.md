@@ -36,15 +36,13 @@ pip install -r requirements.txt
     },
   ]
 }
-
+```
 where "type": 
   "wifi" - IoT device that uses 802.11 wireless networking
   "zig" - IoT device that connects via Zigbee
   "433" - IoT device that uses 433MHz (ISM) radio
   "zwa" - IoT device that uses Z-Wave
   "bt" - IoT device that connects via Bluetooth
-
-```
 
 
 ## Usage
