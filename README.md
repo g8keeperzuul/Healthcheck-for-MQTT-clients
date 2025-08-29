@@ -3,6 +3,8 @@
 A Python application that monitors MQTT topics and displays their health status via a web interface.
 Health is defined as having received _any_ message on the specified topic over the last 1 hour. 
 
+Useful if you have a lot of IoT devices that publish their updates via MQTT and you want a quick way see if any device has gone offline. 
+
 ## Features
 
 - Subscribes to multiple MQTT topics from a configurable list
