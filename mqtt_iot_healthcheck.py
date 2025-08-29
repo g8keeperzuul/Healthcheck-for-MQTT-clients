@@ -222,6 +222,78 @@ def serve_icon(filename):
     """Serve icon files from the icons directory"""
     return send_from_directory('icons', filename)
 
+@app.route('/metrics')
+def get_metrics():
+    """Prometheus metrics endpoint"""
+    if not health_checker:
+        return "# No health checker initialized\n", 200, {'Content-Type': 'text/plain'}
+    
+    status_data = health_checker.get_status_data()
+    metrics_lines = []
+    
+    # Add help and type information
+    metrics_lines.append("# HELP mqtt_topic_last_seen_timestamp Unix timestamp of last message received for each topic")
+    metrics_lines.append("# TYPE mqtt_topic_last_seen_timestamp gauge")
+    metrics_lines.append("# HELP mqtt_topic_message_count Total number of messages received for each topic")
+    metrics_lines.append("# TYPE mqtt_topic_message_count counter")
+    metrics_lines.append("# HELP mqtt_topic_healthy Whether the topic is considered healthy (1) or not (0)")
+    metrics_lines.append("# TYPE mqtt_topic_healthy gauge")
+    metrics_lines.append("# HELP mqtt_topic_avg_interval_seconds Average interval between messages in seconds")
+    metrics_lines.append("# TYPE mqtt_topic_avg_interval_seconds gauge")
+    
+    current_time = datetime.now()
+    
+    for topic_data in status_data:
+        topic = topic_data['topic']
+        # Sanitize topic name for Prometheus (replace invalid characters with underscores)
+        safe_topic = topic.replace('/', '_').replace('-', '_').replace('.', '_').replace(':', '_').replace(' ', '_')
+        display_name = topic_data['display_name']
+        topic_type = topic_data['type']
+        message_count = topic_data['message_count']
+        status = topic_data['status']
+        
+        # Calculate timestamp for last seen
+        if topic_data['last_seen'] != 'Never':
+            last_seen_dt = datetime.strptime(topic_data['last_seen'], '%Y-%m-%d %H:%M:%S')
+            last_seen_timestamp = last_seen_dt.timestamp()
+        else:
+            last_seen_timestamp = 0
+        
+        # Convert average interval to seconds
+        avg_interval_str = topic_data['avg_interval']
+        avg_interval_seconds = 0
+        if avg_interval_str != "No data":
+            if avg_interval_str.endswith('s'):
+                avg_interval_seconds = float(avg_interval_str[:-1])
+            elif avg_interval_str.endswith('m'):
+                avg_interval_seconds = float(avg_interval_str[:-1]) * 60
+            elif avg_interval_str.endswith('h'):
+                avg_interval_seconds = float(avg_interval_str[:-1]) * 3600
+            elif avg_interval_str.endswith('d'):
+                avg_interval_seconds = float(avg_interval_str[:-1]) * 86400
+        
+        # Labels for metrics
+        labels = f'topic="{topic}",display_name="{display_name}",type="{topic_type}"'
+        
+        # Last seen timestamp metric
+        metrics_lines.append(f'mqtt_topic_last_seen_timestamp{{{labels}}} {last_seen_timestamp}')
+        
+        # Message count metric
+        metrics_lines.append(f'mqtt_topic_message_count{{{labels}}} {message_count}')
+        
+        # Health status metric (1 for healthy, 0 for unhealthy/never_seen)
+        healthy_value = 1 if status == "healthy" else 0
+        metrics_lines.append(f'mqtt_topic_healthy{{{labels}}} {healthy_value}')
+        
+        # Average interval metric
+        if avg_interval_seconds > 0:
+            metrics_lines.append(f'mqtt_topic_avg_interval_seconds{{{labels}}} {avg_interval_seconds}')
+    
+    # Join all metrics with newlines and add final newline
+    metrics_content = '\n'.join(metrics_lines) + '\n'
+    
+    return metrics_content, 200, {'Content-Type': 'text/plain'}
+
 def main():
     global health_checker
     

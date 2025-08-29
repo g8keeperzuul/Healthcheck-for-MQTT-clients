@@ -1,6 +1,7 @@
 # MQTT IoT Health Checker
 
 A Python application that monitors MQTT topics and displays their health status via a web interface.
+Health is defined as having received _any_ message on the specified topic over the last 1 hour. 
 
 ## Features
 
@@ -42,6 +43,7 @@ pip install -r requirements.txt
 ```
 where "type": 
   "wifi" - IoT device that uses 802.11 wireless networking
+  "eth" - IoT device directly wired via ethernet
   "zig" - IoT device that connects via Zigbee
   "433" - IoT device that uses 433MHz (ISM) radio
   "zwa" - IoT device that uses Z-Wave
@@ -61,6 +63,19 @@ Open your web browser and navigate to: http://localhost:5000
 
 - `GET /` - Web interface
 - `GET /api/status` - JSON status data for all topics
+- `GET /metrics` - Prometheus exhibition format metrics
+
+### Metrics
+
+The /metrics endpoint returns Prometheus metrics in exposition format with:
+
+  - Help and type declarations for each metric
+  - mqtt_topic_last_seen_timestamp: Unix timestamp of last message received
+  - mqtt_topic_message_count: Total message count per topic
+  - mqtt_topic_healthy: Health status (1 for healthy, 0 for unhealthy)
+  - mqtt_topic_avg_interval_seconds: Average interval between messages
+
+  The endpoint returns metrics with labels including topic name, display name, and type.
 
 ## Configuration
 
