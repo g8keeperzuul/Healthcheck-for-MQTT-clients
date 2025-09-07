@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional
 import paho.mqtt.client as mqtt
 from flask import Flask, render_template, jsonify, send_from_directory
+import os
+from dotenv import load_dotenv
 
 class MQTTHealthChecker:
     def __init__(self, broker_host: str = "localhost", broker_port: int = 1883, 
@@ -297,18 +299,21 @@ def get_metrics():
 def main():
     global health_checker
     
-    # Parse command line arguments
+    # Load environment variables from .env file
+    load_dotenv()
+    
+    # Parse command line arguments with environment variable defaults
     parser = argparse.ArgumentParser(description='MQTT IoT Health Checker')
-    parser.add_argument('--host', default='localhost', 
-                        help='MQTT broker hostname or IP (default: localhost)')
-    parser.add_argument('--port', type=int, default=1883,
-                        help='MQTT broker port (default: 1883)')
-    parser.add_argument('--user', 
-                        help='MQTT broker username')
-    parser.add_argument('--password', 
-                        help='MQTT broker password')
-    parser.add_argument('--topics-file', default='topics.json',
-                        help='JSON file containing topics to monitor (default: topics.json)')
+    parser.add_argument('--host', default=os.getenv('MQTT_HOST', 'localhost'), 
+                        help='MQTT broker hostname or IP (default: localhost or MQTT_HOST env var)')
+    parser.add_argument('--port', type=int, default=int(os.getenv('MQTT_PORT', '1883')),
+                        help='MQTT broker port (default: 1883 or MQTT_PORT env var)')
+    parser.add_argument('--user', default=os.getenv('MQTT_USER'),
+                        help='MQTT broker username (default: MQTT_USER env var)')
+    parser.add_argument('--password', default=os.getenv('MQTT_PASSWORD'),
+                        help='MQTT broker password (default: MQTT_PASSWORD env var)')
+    parser.add_argument('--topics-file', default=os.getenv('MQTT_TOPICS_FILE', 'topics.json'),
+                        help='JSON file containing topics to monitor (default: topics.json or MQTT_TOPICS_FILE env var)')
     
     args = parser.parse_args()
     

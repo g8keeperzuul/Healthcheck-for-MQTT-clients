@@ -59,6 +59,15 @@ Run the application:
 python mqtt_healthcheck.py --host <IP> --port <1883> --user <mqtt-user> --password <password> --topics-file <topics.json>
 ```
 
+Also supported is a .env file containing any of the following parameters:
+```
+    - MQTT_HOST for --host
+    - MQTT_PORT for --port
+    - MQTT_USER for --user
+    - MQTT_PASSWORD for --password
+    - MQTT_TOPICS_FILE for --topics-file
+```
+
 Open your web browser and navigate to: http://localhost:5000
 
 ## API Endpoints
